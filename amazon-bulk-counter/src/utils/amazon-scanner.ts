@@ -205,57 +205,57 @@ function injectPerUnitPrice(
   quantity: number,
   currencySymbol: string
 ) {
-  // Find the price container with the main price
-  const priceContainer = productDiv.querySelector('[data-a-color="base"] .a-price');
-  if (!priceContainer) return;
-  
-  // Find or create a section for secondary pricing info
-  let secondarySection = productDiv.querySelector('.bulk-counter-secondary');
-  
-  if (!secondarySection) {
-    secondarySection = document.createElement('span');
-    secondarySection.className = 'a-size-base a-color-secondary bulk-counter-secondary';
-    secondarySection.style.cssText = `
-      display: block;
-      margin-top: 4px;
-    `;
-    
-    // Insert after the price container's parent
-    const priceParent = priceContainer.closest('.a-row');
-    if (priceParent && priceParent.parentNode) {
-      priceParent.parentNode.insertBefore(secondarySection, priceParent.nextSibling);
+  try {
+    // Find the price element - try primary selector first, then fallback
+    let priceElement = productDiv.querySelector('.a-price[data-a-size="xl"]');
+    if (!priceElement) {
+      priceElement = productDiv.querySelector('.a-price');
     }
+    if (!priceElement) {
+      console.log('⚠️ Could not find price element for injection');
+      return;
+    }
+    
+    console.log(`🎯 Found price element, injecting per-unit price`);
+    
+    // Find the parent container - look for .a-spacing-none or .s-price-instructions-label-container
+    let targetContainer = priceElement.closest('.a-spacing-none');
+    if (!targetContainer) {
+      targetContainer = priceElement.closest('.s-price-instructions-label-container');
+    }
+    if (!targetContainer) {
+      // Fallback: use the immediate parent of the price element
+      targetContainer = priceElement.parentElement;
+    }
+    
+    if (!targetContainer) {
+      console.log('⚠️ Could not find target container');
+      return;
+    }
+    
+    console.log(`🎯 Found target container, creating secondary price element`);
+    
+    // Create the secondary price element matching Amazon's style
+    const secondaryDiv = document.createElement('div');
+    secondaryDiv.className = 'a-spacing-none bulk-counter-secondary';
+    
+    // Create the price text that mimics Amazon's format
+    const priceText = document.createElement('span');
+    priceText.className = 'a-size-base a-color-secondary';
+    priceText.textContent = `(${currencySymbol}${(pricePerUnit / 100).toFixed(2)}/count)`;
+    
+    secondaryDiv.appendChild(priceText);
+    
+    // Insert after the price element's parent
+    const insertTarget = targetContainer.nextElementSibling;
+    if (insertTarget) {
+      targetContainer.parentNode?.insertBefore(secondaryDiv, insertTarget);
+    } else {
+      targetContainer.parentNode?.appendChild(secondaryDiv);
+    }
+    
+    console.log(`✅ Successfully injected per-unit price element`);
+  } catch (error) {
+    console.error('❌ Error injecting per-unit price:', error);
   }
-  
-  // Create the per-unit price display
-  const priceDisplay = document.createElement('span');
-  priceDisplay.className = 'bulk-counter-info';
-  
-  const openParen = document.createTextNode('(');
-  const priceSpan = document.createElement('span');
-  priceSpan.className = 'a-price a-text-price';
-  priceSpan.style.cssText = `
-    font-weight: 500;
-  `;
-  const offscreenPrice = document.createElement('span');
-  offscreenPrice.className = 'a-offscreen';
-  offscreenPrice.textContent = formatPrice(Math.round(pricePerUnit), currencySymbol);
-  const visiblePrice = document.createElement('span');
-  visiblePrice.setAttribute('aria-hidden', 'true');
-  visiblePrice.textContent = formatPrice(Math.round(pricePerUnit), currencySymbol);
-  
-  priceSpan.appendChild(offscreenPrice);
-  priceSpan.appendChild(visiblePrice);
-  
-  const perCountLabel = document.createTextNode('/count');
-  const quantityInfo = document.createTextNode(` - ${quantity} qty)`);
-  
-  priceDisplay.appendChild(openParen);
-  priceDisplay.appendChild(priceSpan);
-  priceDisplay.appendChild(perCountLabel);
-  priceDisplay.appendChild(quantityInfo);
-  
-  // Clear previous content and add new
-  secondarySection.innerHTML = '';
-  secondarySection.appendChild(priceDisplay);
 }
