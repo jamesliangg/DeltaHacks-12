@@ -137,10 +137,32 @@ function processProduct(productDiv: HTMLElement, index: number = 0) {
     const title = titleElement.textContent || '';
     console.log(`📝 Product ${index}: "${title.substring(0, 50)}..."`);
     
-    // Get price element - look for .a-price
-    const priceElement = productDiv.querySelector('[data-a-color="base"] .a-price');
+    // Get price element - look for .a-price (more flexible selector)
+    const priceElement = productDiv.querySelector('.a-price[data-a-size="xl"]');
     if (!priceElement) {
-      console.log(`⏭️  Product ${index}: No price element found`);
+      console.log(`⏭️  Product ${index}: No price element found (tried .a-price[data-a-size="xl"])`);
+      // Try fallback selector
+      const fallbackPrice = productDiv.querySelector('.a-price');
+      if (!fallbackPrice) {
+        console.log(`⏭️  Product ${index}: No fallback price element found`);
+        return;
+      }
+      // Use fallback
+      const priceText = fallbackPrice.textContent || '';
+      console.log(`💰 Product ${index}: Price text (fallback) = "${priceText}"`);
+      
+      const quantity = extractQuantity(title);
+      const price = extractPrice(priceText);
+      
+      console.log(`📊 Product ${index}: Quantity=${quantity}, Price=${price}`);
+      
+      if (quantity && price) {
+        const pricePerUnit = price / quantity;
+        const currencySymbol = priceText.match(/[\$€£¥₹]/)?.[0] || '$';
+        console.log(`✅ Product ${index}: Calculated ${currencySymbol}${(pricePerUnit / 100).toFixed(2)}/count`);
+        injectPerUnitPrice(productDiv, pricePerUnit, quantity, currencySymbol);
+        productDiv.setAttribute('data-bulk-counter-processed', 'true');
+      }
       return;
     }
     
