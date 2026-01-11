@@ -21,11 +21,11 @@ A Wxt browser extension that automatically calculates and displays $/count prici
    ```
 3. Install dependencies:
    ```bash
-   npm install
+   pnpm install
    ```
 4. Build the extension:
    ```bash
-   npm run build
+   pnpm run build
    ```
 5. Load in your browser:
    - **Chrome/Brave**: Go to `chrome://extensions/`, enable "Developer mode", and click "Load unpacked"
@@ -38,7 +38,7 @@ A Wxt browser extension that automatically calculates and displays $/count prici
 Run the extension in development mode with hot reload:
 
 ```bash
-npm run dev
+pnpm run dev
 ```
 
 ### Build
@@ -46,7 +46,7 @@ npm run dev
 Build the extension for production:
 
 ```bash
-npm run build
+pnpm run build
 ```
 
 ### Create Distribution Zip
@@ -54,7 +54,7 @@ npm run build
 Package the extension:
 
 ```bash
-npm run zip
+pnpm run zip
 ```
 
 ## How It Works
