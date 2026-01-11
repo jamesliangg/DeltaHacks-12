@@ -115,15 +115,35 @@ export async function scanAmazonResults() {
  */
 function processProduct(productDiv: HTMLElement, index: number = 0) {
   try {
+    // Use ASIN-based deduplication across scans
+    const asin = productDiv.getAttribute('data-asin') || '';
+
     // Skip if already processed
-    if (productDiv.querySelector('[data-bulk-counter-processed]')) {
+    if (productDiv.hasAttribute('data-bulk-counter-processed')) {
       console.log(`⏭️  Product ${index}: Already processed, skipping`);
+      return;
+    }
+
+    // Skip if we've already handled this ASIN in prior scans
+    if (asin && processedASINs.has(asin)) {
+      console.log(`⏭️  Product ${index}: ASIN ${asin} already processed earlier, skipping`);
+      productDiv.setAttribute('data-bulk-counter-processed', 'true');
       return;
     }
     
     // Check if already has per-unit pricing (skip early)
     if (hasExistingPerUnitPricing(productDiv)) {
       console.log(`⏭️  Product ${index}: Already has per-unit pricing, skipping`);
+      if (asin) processedASINs.add(asin);
+      productDiv.setAttribute('data-bulk-counter-processed', 'true');
+      return;
+    }
+
+    // Skip if our own injected element exists
+    if (productDiv.querySelector('.bulk-counter-secondary')) {
+      console.log(`⏭️  Product ${index}: Injection already present, skipping`);
+      if (asin) processedASINs.add(asin);
+      productDiv.setAttribute('data-bulk-counter-processed', 'true');
       return;
     }
     
@@ -162,6 +182,7 @@ function processProduct(productDiv: HTMLElement, index: number = 0) {
         console.log(`✅ Product ${index}: Calculated ${currencySymbol}${(pricePerUnit / 100).toFixed(2)}/count`);
         injectPerUnitPrice(productDiv, pricePerUnit, quantity, currencySymbol);
         productDiv.setAttribute('data-bulk-counter-processed', 'true');
+        if (asin) processedASINs.add(asin);
       }
       return;
     }
@@ -188,6 +209,7 @@ function processProduct(productDiv: HTMLElement, index: number = 0) {
       
       // Mark as processed
       productDiv.setAttribute('data-bulk-counter-processed', 'true');
+      if (asin) processedASINs.add(asin);
     } else {
       console.log(`⏭️  Product ${index}: Could not extract quantity or price`);
     }
@@ -195,6 +217,9 @@ function processProduct(productDiv: HTMLElement, index: number = 0) {
     console.error(`❌ Product ${index}: Error processing product:`, error);
   }
 }
+
+// Global cache of processed ASINs to avoid duplicate work across scans
+const processedASINs = new Set<string>();
 
 /**
  * Inject the calculated per-unit price into the DOM

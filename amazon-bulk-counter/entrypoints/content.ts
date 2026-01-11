@@ -26,9 +26,15 @@ export default defineContentScript({
     // Initial scan
     scanAmazonResults();
     
-    // Set up observer to handle dynamically loaded products
+    // Set up observer to handle dynamically loaded products (debounced)
+    let debounceTimer: number | undefined;
     const observer = new MutationObserver(() => {
-      scanAmazonResults();
+      if (debounceTimer) {
+        clearTimeout(debounceTimer);
+      }
+      debounceTimer = setTimeout(() => {
+        scanAmazonResults();
+      }, 200) as unknown as number;
     });
     
     observer.observe(document.body, {
