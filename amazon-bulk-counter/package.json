@@ -1,0 +1,24 @@
+{
+  "name": "amazon-bulk-counter",
+  "displayName": "Amazon Bulk Counter",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Automatically calculates and displays $/count for bulk items on Amazon search results",
+  "author": "James Liang",
+  "license": "MIT",
+  "packageManager": "pnpm@latest",
+  "scripts": {
+    "dev": "wxt",
+    "build": "wxt build",
+    "build:firefox": "wxt build -b firefox",
+    "zip": "wxt zip",
+    "zip:firefox": "wxt zip -b firefox"
+  },
+  "dependencies": {
+    "wxt": "^0.19.0"
+  },
+  "devDependencies": {
+    "@wxt-dev/auto-icons": "^1.0.0",
+    "typescript": "^5.3.3"
+  }
+}
